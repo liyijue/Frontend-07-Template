@@ -1,0 +1,11 @@
+.chess_item {
+  width: 100px;
+  height: 100px;
+  background-color: pink;
+  border: 1px solid #ffffff;
+  display: inline-block;
+  vertical-align: bottom;
+  line-height: 100px;
+  text-align: center;
+  font-size: 50px;
+}
