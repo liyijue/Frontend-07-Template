@@ -1,0 +1,13 @@
+.map_list {
+  display: flex;
+  flex-direction: row;
+}
+
+.map_item {
+  width: 6px;
+  height: 6px;
+  vertical-align: top;
+  background-color: gray;
+  border-bottom: 1px solid #fff;
+  border-right: 1px solid #fff;
+}
