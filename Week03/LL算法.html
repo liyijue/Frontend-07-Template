@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    const regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\+)|(\-)|(\*)|(\/)/g
+    const dictionary = ['Number', 'Whitespace', 'LineTerminator', '+', '-', '*', '/']
+
+    function* tokenize(source) {
+      let lastIndex = 0
+      while (true) {
+        // 记住上一次匹配到的最后值
+        lastIndex = regexp.lastIndex
+        // exec 会一直迭代捕获匹配 且 会更新lastIndex
+        const result = regexp.exec(source)
+        if (!result) break
+        // 如果 下一次的lastIndex - 上一次的lastIndex > 匹配的长度说明有问题
+        if (regexp.lastIndex - lastIndex > result[0].length) break
+
+        // 完全匹配成功的文本将作为返回数组的第一项，从第二项起，后续每项都对应正则表达式内捕获括号里匹配成功的文本
+        // 每个括号代表一组 成功时那一组就会有对应内容
+        for (let i = 1; i <= dictionary.length; i++) {
+          // 检测是那一组匹配成功
+          if (result[i]) {
+            // 因为从1开始所以结果下标要减一
+            yield {
+              type: dictionary[i - 1],
+              value: result[0]
+            }
+          }
+        }
+      }
+      yield {
+        type: 'EOF'
+      }
+    }
+
+    let source = []
+    const tokenList = tokenize('10 + 25 * 2 + 2')
+    for (const token of tokenList) {
+      if (token.type !== 'Whitespace' && token.type !== 'LineTerminator') {
+        source.push(token)
+      }
+    }
+
+    // 乘法表达式 -> 先处理乘法
+    function MultiplicativeExpression(source) {
+      if (source[0].type === 'Number') {
+        const node = {
+          type: 'MultiplicativeExpression',
+          children: source[0]
+        }
+        source[0] = node
+        return MultiplicativeExpression(source)
+      }
+      if (source[0].type === 'MultiplicativeExpression' && source[1] && source[1].type === '*') {
+        const temp = [source.shift(), source.shift(), source.shift()]
+        const node = {
+          type: 'MultiplicativeExpression',
+          operator: '*',
+          children: temp
+        }
+        source.unshift(node)
+        return MultiplicativeExpression(source)
+      }
+      if (source[0].type === 'MultiplicativeExpression' && source[1] && source[1].type === '/') {
+        const temp = [source.shift(), source.shift(), source.shift()]
+        const node = {
+          type: 'MultiplicativeExpression',
+          operator: '/',
+          children: temp
+        }
+        source.unshift(node)
+        return MultiplicativeExpression(source)
+      }
+      if (source[0].type === 'MultiplicativeExpression')
+        return source[0]
+    }
+
+    // 加法表达式
+    function AdditiveExpression(source) {
+      if (source[0].type === 'MultiplicativeExpression') {
+        const node = {
+          type: 'AdditiveExpression',
+          children: [source[0]]
+        }
+        source[0] = node
+        return AdditiveExpression(source)
+      }
+      if (source[0].type === 'AdditiveExpression' && source[1] && source[1].type === '+') {
+        const node = {
+          type: 'AdditiveExpression',
+          operator: '+',
+          children: []
+        }
+        node.children.push(source.shift())
+        node.children.push(source.shift())
+        MultiplicativeExpression(source)
+        node.children.push(source.shift())
+        source.unshift(node)
+        return AdditiveExpression(source)
+      }
+      if (source[0].type === 'AdditiveExpression' && source[1] && source[1].type === '-') {
+        const node = {
+          type: 'AdditiveExpression',
+          operator: '-',
+          children: []
+        }
+        node.children.push(source.shift())
+        node.children.push(source.shift())
+        MultiplicativeExpression(source)
+        node.children.push(source.shift())
+        source.unshift(node)
+        return AdditiveExpression(source)
+      }
+      if (source[0].type === 'AdditiveExpression')
+        return source
+
+      MultiplicativeExpression(source)
+      return AdditiveExpression(source)
+    }
+
+    // 最终处理
+    function expression(token) {
+      if (token[0].type === 'AdditiveExpression' && token[1].type === 'EOF') {
+        const node = {
+          children: [token.shift(), token.shift()]
+        }
+        token.unshift(node)
+        return token
+      }
+      AdditiveExpression(token)
+      return expression(token)
+    }
+
+    console.log(expression(source))
+  </script>
+</body>
+
+</html>
