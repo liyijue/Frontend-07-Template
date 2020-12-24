@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    // 字典树 -- 数据解构
+    class Trie {
+      constructor() {
+        // 唯一标识结束符
+        this.$ = Symbol('$')
+        this.root = Object.create(null)
+      }
+      // 向字典树中插入节点
+      insert(node) {
+        let parentNode = this.root
+        for (const n of node) {
+          // 当没有这个节点时
+          if (!(n in parentNode))
+            parentNode[n] = Object.create(null)
+          // 走下个节点
+          parentNode = parentNode[n]
+        }
+        // 最后已经有结尾标识符说明有过一次了
+        if (this.$ in parentNode) {
+          parentNode[this.$]++
+        } else {
+          parentNode[this.$] = 1
+        }
+      }
+      // 展示当前字典树中出现次数最多的字符串
+      show() {
+        let maxIndex = 0
+        let maxWord = null
+        let visit = (node, word) => {
+          if (node[this.$] && node[this.$] > maxIndex) {
+            maxIndex = node[this.$]
+            maxWord = word
+          }
+          for (const p in node) {
+            visit(node[p], word + p)
+          }
+        }
+        visit(this.root, '')
+        console.log(maxIndex, maxWord)
+      }
+    }
+
+    // 随机生成一定长度的字符串
+    const createString = length => {
+      let s = ''
+      for (let i = 0; i < length; i++) {
+        s += String.fromCharCode(Math.random() * 26 + 'a'.charCodeAt())
+      }
+      return s
+    }
+
+    const trie = new Trie()
+    for (let i = 0; i < 1000; i++) {
+      trie.insert(createString(4))
+    }
+    trie.show()
+  </script>
+</body>
+
+</html>
