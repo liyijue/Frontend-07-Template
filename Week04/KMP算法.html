@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    /**
+      source => 原串
+      pattern => 子串
+    */
+    function Kmp(source, pattern) {
+      // 匹配表
+      const table = new Array(pattern.length).fill(0)
+
+      {
+        // i 代表字符串当前匹配到的下标
+        let i = 1
+        // j i 前面所要匹配的下标
+        let j = 0
+
+        while (i < table.length) {
+          // 两个字母相等 说明前面相等相后移动 且记录当前下标
+          if (pattern[i] === pattern[j]) {
+            i++
+            j++
+            table[i] = j
+            // 如果没匹配到 j > 0 说明有可能之前有匹配到过回到上个匹配到的点
+          } else {
+            if (j > 0) {
+              j = table[j]
+            } else {
+              i++
+            }
+          }
+        }
+      }
+
+      {
+        // 主串的下标
+        let i = 0
+        // 子串的下标
+        let j = 0
+
+        while (i < source.length) {
+          if (source[i] === pattern[j]) {
+            i++
+            j++
+          } else {
+            // 说明有可能之前有匹配到的直接可以跳到匹配的位置 否则 小于0 说明之前都没有匹配到的了 需要从头开始 i++ 先后继续判断
+            if (j > 0) {
+              j = table[j]
+            } else {
+              i++
+            }
+          }
+          // 长度相等说明匹配到了
+          if (j === pattern.length) {
+            return true
+          }
+        }
+
+        return false
+      }
+    }
+
+    console.log(Kmp('abababc', 'bac'))
+  </script>
+</body>
+
+</html>
