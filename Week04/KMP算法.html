@@ -60,15 +60,15 @@
           }
           // 长度相等说明匹配到了
           if (j === pattern.length) {
-            return true
+            return i - pattern.length
           }
         }
 
-        return false
+        return -1
       }
     }
 
-    console.log(Kmp('abababc', 'bac'))
+    console.log(Kmp('abababc', 'ba'))
   </script>
 </body>
 
