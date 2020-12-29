@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    function find(source, pattern) {
+      let starCount = 0
+      // 找到所有的星
+      for (let i = 0; i < pattern.length; i++) {
+        if (pattern[i] === '*')
+          starCount++
+      }
+
+      // 如果没有任何星 就强制匹配
+      if (!starCount) {
+        for (let i = 0; i < source.length; i++) {
+          if (source[i] !== pattern[i])
+            return false
+        }
+        return true
+      }
+
+      // 第一个星号之前的匹配
+      let i = 0
+      for (; pattern[i] !== '*'; i++) {
+        if (source[i] !== pattern[i])
+          return false
+      }
+      let lastIndex = i
+
+      // 第一个星之后 最后一个星之前 中间的部分
+      for (let p = 0; p < starCount - 1; p++) {
+        // 当前是i是星的下标 所以加1 获取星号后面的字符
+        i++
+        let subPattern = ''
+
+        while (pattern[i] !== '*') {
+          subPattern += pattern[i]
+          i++
+        }
+
+        const reg = new RegExp(subPattern.replace(/\?/g, '[\\s\\S]'), 'g')
+        reg.lastIndex = lastIndex
+        // 为 null 时代表没有匹配到 为false
+        if (!reg.exec(source))
+          return false
+
+        lastIndex = reg.lastIndex
+      }
+
+      // 最后一颗星后面部分强制匹配不时*的字符
+      for (let j = 0; j < source.length - lastIndex && pattern[pattern.length - j - 1] !== '*'; j++) {
+        if (source[source.length - j - 1] !== pattern[pattern.length - j - 1] && pattern[pattern.length - j - 1] !== '?')
+          return false
+      }
+
+      return true
+    }
+  </script>
+</body>
+
+</html>
