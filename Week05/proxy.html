@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <input id="r" type="range" min="0" max="255" />
+  <input id="g" type="range" min="0" max="255" />
+  <input id="b" type="range" min="0" max="255" />
+  <div id="box" style="width: 100px; height: 100px;"></div>
+
+  <script>
+    let callbacks = new Map()
+    const reactivties = new Map()
+
+    // 里面存储那些本次操作使用的对象和属性
+    let useReactivties = []
+
+    let object = {
+      r: '0',
+      g: '100',
+      b: '255'
+    }
+
+    const po = reactive(object)
+
+    // 放入对应回调函数
+    effect(() => {
+      document.querySelector('#r').value = po.r
+    })
+
+    effect(() => {
+      document.querySelector('#g').value = po.g
+    })
+
+    effect(() => {
+      document.querySelector('#b').value = po.b
+    })
+
+    document.querySelector('#r').addEventListener('change', event => po.r = event.target.value)
+    document.querySelector('#g').addEventListener('change', event => po.g = event.target.value)
+    document.querySelector('#b').addEventListener('change', event => po.b = event.target.value)
+
+    effect(() => {
+      document.querySelector('#box').style.backgroundColor = `rgb(${po.r}, ${po.g}, ${po.b})`
+    })
+
+    function effect(callback) {
+      useReactivties = []
+      // 在这里会调用拦截的get, 把对应使用的属性和对象存入 useReactivties
+      callback()
+      // 根据 使用的对象 和 属性 加入对应的回调
+      for (let reactivties of useReactivties) {
+        // 如果有相同的值贼不要存入
+        if (!callbacks.has(reactivties[0])) {
+          callbacks.set(reactivties[0], new Map())
+        }
+        if (!callbacks.get(reactivties[0]).has(reactivties[1])) {
+          callbacks.get(reactivties[0]).set(reactivties[1], [])
+        }
+        callbacks.get(reactivties[0]).get(reactivties[1]).push(callback)
+      }
+    }
+
+    function reactive(obj) {
+      if (reactivties.has(obj))
+        return reactivties.get(obj)
+
+      const proxy = new Proxy(obj, {
+        set(obj, prop, value) {
+          obj[prop] = value
+          // 调取对应存入的回调
+          if (callbacks.has(obj)) {
+            if (callbacks.get(obj).has(prop)) {
+              for (const callback of callbacks.get(obj).get(prop)) {
+                callback()
+              }
+            }
+          }
+          return obj[prop] = value
+        },
+        get(obj, prop) {
+          useReactivties.push([obj, prop])
+          if (typeof obj[prop] === 'object') {
+            return reactive(obj[prop])
+          }
+          return obj[prop]
+        }
+      })
+      reactivties.set(obj, proxy)
+      return proxy
+    }
+  </script>
+</body>
+
+</html>

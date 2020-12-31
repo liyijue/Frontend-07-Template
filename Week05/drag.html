@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="container">
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+    文字 文字 文字 文字 文字 文字 文字 文字
+  </div>
+  <div id="dragable" style="display: inline-block; width: 100px; height: 100px; background-color: pink;"></div>
+
+  <script>
+    const dragable = document.querySelector('#dragable')
+    let baseX = 0
+    let baseY = 0
+
+    dragable.addEventListener('mousedown', event => {
+      const startX = event.clientX
+      const startY = event.clientY
+
+      const up = event => {
+        document.removeEventListener('mousemove', move)
+        document.removeEventListener('mouseup', up)
+        baseX += event.clientX - startX
+        baseY += event.clientY - startY
+      }
+
+      const move = event => {
+        // dragable.style.transform = `translate(${event.clientX - startX + baseX}px, ${event.clientY - startY + baseY}px)`
+        const range = getNearest(event.clientX, event.clientY)
+        range.insertNode(dragable)
+      }
+
+      document.addEventListener('mousemove', move)
+      document.addEventListener('mouseup', up)
+    })
+
+    const ranges = []
+    const container = document.querySelector('#container')
+    for (let i = 0; i < container.childNodes[0].textContent.length; i++) {
+      const range = document.createRange()
+      range.setStart(container.childNodes[0], i)
+      range.setEnd(container.childNodes[0], i)
+
+      ranges.push(range)
+    }
+
+    function getNearest(x, y) {
+      let min = Infinity
+      let nearest = null
+
+      for (const range of ranges) {
+        const rect = range.getBoundingClientRect()
+        let distance = (rect.x - x) ** 2 + (rect.y - y) ** 2
+        if (min > distance) {
+          min = distance
+          nearest = range
+        }
+      } 
+
+      return nearest
+    }
+
+    document.addEventListener('selectstart', event => event.preventDefault())
+  </script>
+</body>
+
+</html>
